@@ -1376,7 +1376,7 @@ fy_emit_token_scalar_style(struct fy_emitter *emit, struct fy_token *fyt,
 		}
 
 		/* any style, can be just a plain, just make it so */
-		if (style == FYNS_ANY && (aflags & (FYTTAF_CAN_BE_PLAIN | FYTTAF_HAS_LB)) == FYTTAF_CAN_BE_PLAIN) {
+		if ((aflags & (FYTTAF_CAN_BE_PLAIN | FYTTAF_HAS_LB)) == FYTTAF_CAN_BE_PLAIN) {
 			style = FYNS_PLAIN;
 			goto out;
 		}
