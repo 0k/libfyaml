@@ -650,15 +650,38 @@ void fy_emit_common_node_preamble(struct fy_emitter *emit,
 			assert(td_handle);
 			td_prefix = fy_tag_token_get_directive_prefix(fyt_tag, &td_prefix_size);
 			assert(td_prefix);
+			if (!td_handle_size) {
+              fy_emit_printf(emit, fyewt_tag, "!<%.*s>", (int)tag_len, tag);
+              emit->flags &= ~(FYEF_WHITESPACE | FYEF_INDENTATION);
+            }
+			else {
+                if (strncmp(td_prefix, "tag:yaml.org,2002:", td_prefix_size) == 0) {
+                    if ((strncmp(tag + td_prefix_size, "str", tag_len - td_prefix_size) != 0) &&
+                        (strncmp(tag + td_prefix_size, "int", tag_len - td_prefix_size) != 0) &&
+                        (strncmp(tag + td_prefix_size, "float", tag_len - td_prefix_size) != 0) &&
+                        (strncmp(tag + td_prefix_size, "seq", tag_len - td_prefix_size) != 0) &&
+                        (strncmp(tag + td_prefix_size, "map", tag_len - td_prefix_size) != 0) &&
+                        (strncmp(tag + td_prefix_size, "bool", tag_len - td_prefix_size) != 0) &&
+                        (strncmp(tag + td_prefix_size, "set", tag_len - td_prefix_size) != 0) &&
+                        (strncmp(tag + td_prefix_size, "omap", tag_len - td_prefix_size) != 0) &&
+                        (strncmp(tag + td_prefix_size, "null", tag_len - td_prefix_size) != 0)) {
+                        fy_emit_printf(emit, fyewt_tag, "!!%.*s",
+                                       (int)(tag_len - td_prefix_size), tag + td_prefix_size);
+                        emit->flags &= ~(FYEF_WHITESPACE | FYEF_INDENTATION);
+                    }
+                } else {
+                    if (td_prefix_size == 1 &&
+                        (strncmp(td_prefix, "!", 1) == 0)) {
+                        fy_emit_printf(emit, fyewt_tag, "%.*s", (int)tag_len, tag);
+                    } else {
+                        fy_emit_printf(emit, fyewt_tag, "!<%.*s%.*s>",
+                                       (int)td_prefix_size, td_prefix,
+                                       (int)(tag_len - td_prefix_size), tag + td_prefix_size);
+                    }
+                    emit->flags &= ~(FYEF_WHITESPACE | FYEF_INDENTATION);
 
-			if (!td_handle_size)
-				fy_emit_printf(emit, fyewt_tag, "!<%.*s>", (int)tag_len, tag);
-			else
-				fy_emit_printf(emit, fyewt_tag, "%.*s%.*s",
-						(int)td_handle_size, td_handle,
-						(int)(tag_len - td_prefix_size), tag + td_prefix_size);
-
-			emit->flags &= ~(FYEF_WHITESPACE | FYEF_INDENTATION);
+                }
+            }
 		}
 	}
 
